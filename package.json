@@ -9,7 +9,7 @@
     "format": "prettier --write 'src/**/*.{js,ts}'",
     "dev": "tsc && nodemon --exec babel-node dist/index.js",
     "build": "tsc && babel src -d dist --extensions \".ts\"",
-    "start": "node dist/index.js"
+    "start": "npm run build && node dist/index.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
