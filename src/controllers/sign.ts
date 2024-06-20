@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
-import { logError, logInfo } from "../util/logging.js";
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import { logError, logInfo } from '../util/logging.js';
 
 interface UserData {
   email: string;
@@ -9,7 +9,11 @@ interface UserData {
   password: string;
 }
 
-export const handleSignUp = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
+export const handleSignUp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<Response | void> => {
   const { email, username, password } = req.body;
   logInfo(`Signup attempt for username: ${username}, email: ${email}`);
 
@@ -18,7 +22,7 @@ export const handleSignUp = async (req: Request, res: Response, next: NextFuncti
     const userExists = await User.findOne({ $or: [{ email }, { username }] });
     if (userExists) {
       logInfo(`User already exists: ${userExists.username}`);
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     logInfo(`Creating user: ${username}`);
@@ -34,7 +38,10 @@ export const handleSignUp = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
-export const handleSignIn = async (req: Request, res: Response): Promise<Response | void> => {
+export const handleSignIn = async (
+  req: Request,
+  res: Response
+): Promise<Response | void> => {
   const { username, password } = req.body;
   logInfo(`Sign-in attempt for username: ${username}`);
 
@@ -44,16 +51,18 @@ export const handleSignIn = async (req: Request, res: Response): Promise<Respons
 
     if (!user) {
       logInfo(`Authentication failed for username: ${username}`);
-      return res.status(401).json({ message: "Authentication failed" });
+      return res.status(401).json({ message: 'Authentication failed' });
     }
 
     const token = generateAuthToken(user._id as string);
-    logInfo(`Token generated for successful sign-in: ${user.username}, ID: ${user._id}`);
+    logInfo(
+      `Token generated for successful sign-in: ${user.username}, ID: ${user._id}`
+    );
 
     return res.send({ token });
   } catch (err) {
     logError(`Sign in error for user ${username}: ${(err as Error).message}`);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -64,8 +73,8 @@ const createUser = async (userData: UserData) => {
     if (userExists) {
       throw new Error(
         userExists.email === email
-          ? "User with this email already exists"
-          : "User with this username already exists"
+          ? 'User with this email already exists'
+          : 'User with this username already exists'
       );
     }
     const user = new User(userData);
@@ -73,16 +82,18 @@ const createUser = async (userData: UserData) => {
     logInfo(`User saved to the database: ${user.username}`);
     return user;
   } catch (error) {
-    logError(`Error creating user ${userData.username} with email ${userData.email}: ${(error as Error).message}`);
+    logError(
+      `Error creating user ${userData.username} with email ${userData.email}: ${(error as Error).message}`
+    );
     throw error;
   }
 };
 
 const generateAuthToken = (userId: string): string => {
   if (!process.env.JWT_SECRET) {
-    throw new Error("JWT_SECRET is not defined");
+    throw new Error('JWT_SECRET is not defined');
   }
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 const findUserByCredentials = async (username: string, password: string) => {
